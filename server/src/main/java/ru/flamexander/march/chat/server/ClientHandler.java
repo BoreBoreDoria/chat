@@ -19,10 +19,6 @@ public class ClientHandler {
         this.username = "user" + usersCounter;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
     public ClientHandler(Server server, Socket socket) throws IOException {
         this.server = server;
         this.socket = socket;
@@ -38,16 +34,6 @@ public class ClientHandler {
                         if (msg.startsWith("/exit")) {
                             disconnect();
                             break;
-                        }
-                        // Добавляем обработку команды личного сообщения
-                        if (msg.startsWith("/w ")) {
-                            String[] tokens = msg.split(" ", 3);
-                            if (tokens.length == 3) {
-                                String targetUsername = tokens[1];
-                                String message = tokens[2];
-                                server.sendPrivateMessage(targetUsername, username + ": " + message);
-                            }
-                            continue;
                         }
                         continue;
                     }
