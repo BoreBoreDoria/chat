@@ -40,13 +40,4 @@ public class Server {
             c.sendMessage(message);
         }
     }
-
-    public synchronized void sendPrivateMessage(String targetUsername, String message) {
-        for (ClientHandler client : clients) {
-            if (client.getUsername().equalsIgnoreCase(targetUsername)) {
-                client.sendMessage(message);
-                break;
-            }
-        }
-    }
 }
