@@ -23,7 +23,6 @@ public class ClientHandler {
         return username;
     }
 
-
     public ClientHandler(Server server, Socket socket) throws IOException {
         this.server = server;
         this.socket = socket;
@@ -40,7 +39,6 @@ public class ClientHandler {
                             disconnect();
                             break;
                         }
-                        // Добавляем обработку команды личного сообщения
                         if (msg.startsWith("/w ")) {
                             String[] tokens = msg.split(" ", 3);
                             if (tokens.length == 3) {
