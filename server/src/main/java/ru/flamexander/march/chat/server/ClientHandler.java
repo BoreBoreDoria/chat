@@ -23,6 +23,7 @@ public class ClientHandler {
         return username;
     }
 
+
     public ClientHandler(Server server, Socket socket) throws IOException {
         this.server = server;
         this.socket = socket;
