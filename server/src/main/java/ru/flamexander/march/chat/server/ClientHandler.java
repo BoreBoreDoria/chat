@@ -11,6 +11,7 @@ public class ClientHandler {
     private DataInputStream in;
     private DataOutputStream out;
     private String username;
+    private UserRole role;
 
     private static int usersCounter = 0;
 
@@ -23,11 +24,16 @@ public class ClientHandler {
         return username;
     }
 
-    public ClientHandler(Server server, Socket socket) throws IOException {
+    public boolean isAdmin() {
+        return this.role == UserRole.ADMIN;
+    }
+
+    public ClientHandler(Server server, Socket socket, UserRole role) throws IOException {
         this.server = server;
         this.socket = socket;
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
+        this.role = role;
         this.generateUsername();
         new Thread(() -> {
             try {
@@ -45,6 +51,14 @@ public class ClientHandler {
                                 String targetUsername = tokens[1];
                                 String message = tokens[2];
                                 server.sendPrivateMessage(targetUsername, username + ": " + message);
+                            }
+                            continue;
+                        }
+                        if (msg.startsWith("/kick ") && isAdmin()) {
+                            String[] tokens = msg.split(" ", 2);
+                            if (tokens.length == 2) {
+                                String targetUsername = tokens[1];
+                                server.kickUser(targetUsername);
                             }
                             continue;
                         }

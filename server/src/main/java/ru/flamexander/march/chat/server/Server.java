@@ -20,7 +20,7 @@ public class Server {
             System.out.printf("Сервер запущен на порту: %d, ожидаем подключения клиентов\n", port);
             while (true) {
                 Socket socket = serverSocket.accept();
-                subscribe(new ClientHandler(this, socket));
+                subscribe(new ClientHandler(this, socket, UserRole.USER));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -45,6 +45,16 @@ public class Server {
         for (ClientHandler client : clients) {
             if (client.getUsername().equalsIgnoreCase(targetUsername)) {
                 client.sendMessage(message);
+                break;
+            }
+        }
+    }
+
+    public synchronized void kickUser(String username) {
+        for (ClientHandler client : clients) {
+            if (client.getUsername().equalsIgnoreCase(username)) {
+                client.disconnect();
+                System.out.println("Пользователь " + username + " был исключен из чата.");
                 break;
             }
         }
