@@ -9,6 +9,8 @@ import java.util.List;
 public class Server {
     private int port;
     private List<ClientHandler> clients;
+    private DatabaseAuthService authService;
+
 
     public Server(int port) {
         this.port = port;
@@ -58,5 +60,9 @@ public class Server {
                 break;
             }
         }
+    }
+
+    public boolean authenticateUser(String username, String password) {
+        return authService.authenticate(username, password);
     }
 }

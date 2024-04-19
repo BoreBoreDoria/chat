@@ -37,6 +37,20 @@ public class ClientHandler {
         this.generateUsername();
         new Thread(() -> {
             try {
+                // Аутентификация
+                while (true) {
+                    out.writeUTF("Введите имя пользователя:");
+                    String username = in.readUTF();
+                    out.writeUTF("Введите пароль:");
+                    String password = in.readUTF();
+                    if (server.authenticateUser(username, password)) {
+                        this.username = username;
+                        this.role = UserRole.USER; // Пример, нужно реализовать получение роли из БД
+                        break;
+                    } else {
+                        out.writeUTF("Неверное имя пользователя или пароль. Попробуйте снова.");
+                    }
+                }
                 System.out.println("Подключился новый клиент");
                 while (true) {
                     String msg = in.readUTF();
@@ -88,17 +102,9 @@ public class ClientHandler {
             if (in != null) {
                 in.close();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             if (out != null) {
                 out.close();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             if (socket != null && !socket.isClosed()) {
                 socket.close();
             }
