@@ -9,6 +9,8 @@ import java.util.List;
 public class Server {
     private int port;
     private List<ClientHandler> clients;
+    private DatabaseAuthService authService;
+
 
     public Server(int port) {
         this.port = port;
@@ -20,7 +22,7 @@ public class Server {
             System.out.printf("Сервер запущен на порту: %d, ожидаем подключения клиентов\n", port);
             while (true) {
                 Socket socket = serverSocket.accept();
-                subscribe(new ClientHandler(this, socket));
+                subscribe(new ClientHandler(this, socket, UserRole.USER));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -48,5 +50,19 @@ public class Server {
                 break;
             }
         }
+    }
+
+    public synchronized void kickUser(String username) {
+        for (ClientHandler client : clients) {
+            if (client.getUsername().equalsIgnoreCase(username)) {
+                client.disconnect();
+                System.out.println("Пользователь " + username + " был исключен из чата.");
+                break;
+            }
+        }
+    }
+
+    public boolean authenticateUser(String username, String password) {
+        return authService.authenticate(username, password);
     }
 }

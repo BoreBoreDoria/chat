@@ -11,6 +11,7 @@ public class ClientHandler {
     private DataInputStream in;
     private DataOutputStream out;
     private String username;
+    private UserRole role;
 
     private static int usersCounter = 0;
 
@@ -23,14 +24,33 @@ public class ClientHandler {
         return username;
     }
 
-    public ClientHandler(Server server, Socket socket) throws IOException {
+    public boolean isAdmin() {
+        return this.role == UserRole.ADMIN;
+    }
+
+    public ClientHandler(Server server, Socket socket, UserRole role) throws IOException {
         this.server = server;
         this.socket = socket;
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
+        this.role = role;
         this.generateUsername();
         new Thread(() -> {
             try {
+                // Аутентификация
+                while (true) {
+                    out.writeUTF("Введите имя пользователя:");
+                    String username = in.readUTF();
+                    out.writeUTF("Введите пароль:");
+                    String password = in.readUTF();
+                    if (server.authenticateUser(username, password)) {
+                        this.username = username;
+                        this.role = UserRole.USER; // Пример, нужно реализовать получение роли из БД
+                        break;
+                    } else {
+                        out.writeUTF("Неверное имя пользователя или пароль. Попробуйте снова.");
+                    }
+                }
                 System.out.println("Подключился новый клиент");
                 while (true) {
                     String msg = in.readUTF();
@@ -45,6 +65,14 @@ public class ClientHandler {
                                 String targetUsername = tokens[1];
                                 String message = tokens[2];
                                 server.sendPrivateMessage(targetUsername, username + ": " + message);
+                            }
+                            continue;
+                        }
+                        if (msg.startsWith("/kick ") && isAdmin()) {
+                            String[] tokens = msg.split(" ", 2);
+                            if (tokens.length == 2) {
+                                String targetUsername = tokens[1];
+                                server.kickUser(targetUsername);
                             }
                             continue;
                         }
@@ -74,17 +102,9 @@ public class ClientHandler {
             if (in != null) {
                 in.close();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             if (out != null) {
                 out.close();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             if (socket != null && !socket.isClosed()) {
                 socket.close();
             }
